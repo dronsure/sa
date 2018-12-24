@@ -68,11 +68,15 @@ proc add_server {servername_a hostname_a port_a username_a password_a idfile_a p
 	}
     }
 
-    set  idfile_name ""
-    set  idfile_name [append $idfile_name [file tail $idfile_a] "." [clock seconds]]
-    set  idfile_path "ids/${idfile_name}"
+    set idfile_path ""
     
-    file copy -force $idfile_a $CONFIG_DIR/$idfile_path
+    if {$idfile_a != ""} {
+	set  idfile_name ""
+	set  idfile_name [append $idfile_name [file tail $idfile_a] "." [clock seconds]]
+	set  idfile_path "ids/${idfile_name}"
+    
+	file copy -force $idfile_a $CONFIG_DIR/$idfile_path
+    }
     
     puts $outfile "set server_name $servername_a"
     puts $outfile "dict set servers \$server_name hostname    \"${hostname_a}\""
@@ -83,7 +87,7 @@ proc add_server {servername_a hostname_a port_a username_a password_a idfile_a p
     puts $outfile "dict set servers \$server_name passphrase  \"${passphrase_a}\""
 
     close $outfile
-    puts "${RED_S}Server ${servername} is added.${COLOR_E}"
+    puts "${RED_S}Server ${servername_a} is added.${COLOR_E}"
     return 1    
 }
 
