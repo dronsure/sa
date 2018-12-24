@@ -20,6 +20,17 @@ set COLOR_E "\033\[0m"
 global SSH_COMMAND
 set SSH_COMMAND "zssh"
 
+proc isnumeric {value} {
+    if {![catch {expr {abs($value)}}]} {
+        return 1
+    }
+    set value [string trimleft $value 0]
+    if {![catch {expr {abs($value)}}]} {
+        return 1
+    }
+    return 0
+}
+
 proc add_server {servername_a hostname_a port_a username_a password_a idfile_a passphrase_a} {
     global CONFIG_DIR
     global RED_S
@@ -27,26 +38,17 @@ proc add_server {servername_a hostname_a port_a username_a password_a idfile_a p
     
     set servers [get_server_config]
 
-    set outfile [open "$CONFIG_DIR/config.tcl" r]
-
     # check if already exists
-    dict for {servername info} $servers {
-	dict with info {
-	    if {$servername == $servername_a} {
-		puts -nonewline "${RED_S}Warning, server ${servername_a} already exists, overwrite it?(Y/n):"
-		flush stdout
-		set overwrite [gets stdin]
-
-		if {$overwrite != "Y" && $overwrite != "y"} {
-		    return 0
-		}
-
-		break
-	    }
+    if {[dict exists $servers $servername_a]} {
+	puts -nonewline "${RED_S}Warning, server ${servername_a} already exists, overwrite it?(Y/n):"
+	flush stdout
+	set overwrite [gets stdin]
+	
+	if {$overwrite != "Y" && $overwrite != "y"} {
+	    puts "${RED_S}Cancled.${COLOR_E}"
+	    return 0
 	}
     }
-
-    close $outfile
     
     set outfile [open "$CONFIG_DIR/config.tcl" w]
     
@@ -81,11 +83,73 @@ proc add_server {servername_a hostname_a port_a username_a password_a idfile_a p
     puts $outfile "dict set servers \$server_name passphrase  \"${passphrase_a}\""
 
     close $outfile
+    puts "${RED_S}Server ${servername} is added.${COLOR_E}"
     return 1    
 }
 
-proc del_server {server_index server_name} {
+# delete server
+proc del_server {server} {
+    global RED_S
+    global COLOR_E
+    global CONFIG_DIR
     
+    set servers [get_server_config]
+
+    set really_del_server_name -1
+    
+    # check if is number
+    if { [isnumeric $server] } {
+	set i 0
+	dict for {servername info} $servers {
+	    if {$i eq $server} {
+		set really_del_server_name $servername
+		puts -nonewline "${RED_S}Warning: Really delete ${servername} ?(Y/n):"
+		flush stdout
+		set overwrite [gets stdin]
+	
+		if {$overwrite != "Y" && $overwrite != "y"} {
+		    puts "${RED_S}Cancled.${COLOR_E}"
+		    return 0
+		}
+		
+		break
+	    }
+	    
+	    incr i
+	}
+    } else {
+	if {[dict exists $server]} {
+	    set really_del_server_name $server
+	}
+    }
+
+    if { $really_del_server_name == -1} {
+	puts "${RED_S}Error: ${really_del_server_name} not found!";
+	return 0
+    }
+    
+    # delete it
+    set outfile [open "$CONFIG_DIR/config.tcl" w]
+    
+    dict for {servername info} $servers {
+	dict with info {
+	    if {$servername == $really_del_server_name} {
+		continue
+	    }
+	    
+	    puts $outfile "set server_name $servername"
+	    puts $outfile "dict set servers \$server_name hostname    \"${hostname}\""
+	    puts $outfile "dict set servers \$server_name port        \"${port}\""
+	    puts $outfile "dict set servers \$server_name username    \"${username}\""
+	    puts $outfile "dict set servers \$server_name password    \"${password}\""
+	    puts $outfile "dict set servers \$server_name idfile      \"${idfile}\""
+	    puts $outfile "dict set servers \$server_name passphrase  \"${passphrase}\""
+	}
+    }
+
+    close $outfile
+    puts "${RED_S}Deleted ${really_del_server_name} ok.${COLOR_E}"
+    return 1
 }
 
 proc generate_config {} {
@@ -261,6 +325,29 @@ proc select_and_login {index} {
     return 1
 }
 
+proc update {} {
+    global CONFIG_DIR
+    global RED_S
+    global COLOR_E
+
+    if {![file exists $::env(HOME)/bin/sa]} {
+	puts "${RED_S}Error: ${::env(HOME)}/bin/sa not exists, please install first."
+	return 0
+    }
+
+    # delete first
+    file delete -force $::env(HOME)/bin/sa
+
+    set curr_dir [pwd]
+    
+    # paste it 
+    puts "Info: copying main execute file to ${::env(HOME)}/bin..."
+    file copy -force $curr_dir/sa ${::env(HOME)}/bin/sa
+    puts "Done.\n"
+
+    return 1
+}
+
 proc install {} {
     global CONFIG_DIR
     global RED_S
@@ -269,7 +356,7 @@ proc install {} {
     ## check dependencies
     if {[auto_execok ssh] == ""} {
 	puts "${RED_S}Error: ssh command not installed, please install it first...${COLOR_E}"
-	return 1
+	return 0
     } else {
 	puts "ssh command installed, ok..."
     }
@@ -374,12 +461,19 @@ proc show_usage {} {
     puts "    -a/--add          add a server to config, eg:"
     puts "                      sa -a servername ip port username password \[idfile\] \[passphrase\]\n"
 
+    puts "    -d/--delete       delete a server to config, eg:"
+    puts "                      sa -d 1: delete the server which index is 1"
+    puts "                      sa -d example.tbj: delete the server which name is example.tbj\n"
+    
     puts "    -t/--target       export configs and target to a tgz file, eg: sa -t /home/drons/sa.tgz\n"
 
-    puts "    -i/--install      do install\n"
+    puts "    -i/--install      do install"
+    puts "    -u/--update       do update\n"
     
     puts "Note: Default config directory is $::env(HOME)/.sa, you can configure it by yourself."
     puts "Dependency: zssh, expect\n"
+
+    return 1
 }
 
 proc check_args {argc argv} {
@@ -421,27 +515,25 @@ proc main {argc argv} {
     global COLOR_E
     
     if {$argc < 1} {
-	select_and_login_interact
-	return 1
+	return [select_and_login_interact]
     }
 
     if {[scan [lindex $argv 0] {%[0-9]} m]} {
-	select_and_login [lindex $argv 0]
-	return 1
+	return [select_and_login [lindex $argv 0]]
     }
     
     switch [lindex $argv 0] {
 	"-h" -
 	"--help" {
 	    show_usage
-	    return 1
+	    return 0
 	}
 
 	"-t" -
 	"--target" {
 	    if {$argc < 2} {
 		show_usage
-		return 1
+		return 0
 	    }
 	    return [target [lindex $argv 1]]
 	}
@@ -449,6 +541,11 @@ proc main {argc argv} {
 	"-i" -
 	"--install" {
 	    return [install]
+	}
+
+	"-u" -
+	"--update" {
+	    return [update]
 	}
 
 	"-a" -
@@ -471,37 +568,31 @@ proc main {argc argv} {
 		return 0
 	    }
 
-	    set ret [add_server $servername $hostname $port $username $password $idfile $passphrase]
-
-	    if {$ret == 1} {
-		puts "${RED_S}Server ${servername} is added.${COLOR_E}"
-	    } else {
-		puts "${RED_S}Cancled.${COLOR_E}"
-	    }	    
-	    
-	    return 1
+	    return [add_server $servername $hostname $port $username $password $idfile $passphrase]
 	}
 
 	"-d" -
 	"--delete" {
-	    
-	    return 1
+	    if {$argc < 2} {
+		show_usage
+		return 0
+	    }
+
+	    return [del_server [lindex $argv 1]]
 	}
 
 	"-l" -
 	"--list" {
-	    list_s
-	    return 1
+	    return [list_s]	
 	}
 
 	"-s" -
 	"--select" {
 	    if {$argc < 2} {
 		show_usage
-		return 1
+		return 0
 	    }
-	    select_and_login [lindex $argv 1]
-	    return 1
+	    return [select_and_login [lindex $argv 1]]
 	}
 
 	default {
