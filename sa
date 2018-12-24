@@ -1,18 +1,92 @@
 #!/usr/bin/expect
 
-## global config variables
+# we defined a proc return 1 to true, reutrn 0 to false
+
+# global config variables
 global CONFIG_DIR
 global SSH_IDS_DIR
 set CONFIG_DIR  $::env(HOME)/.sa
 set SSH_IDS_DIR $CONFIG_DIR/ids
 
-## global color variables
+# global color variables
 global RED_S
 global WHITE_S
 global COLOR_E
 set WHITE_S "\033\[01;37m"
 set RED_S   "\033\[01;91m"
 set COLOR_E "\033\[0m"
+
+# global ssh command
+global SSH_COMMAND
+set SSH_COMMAND "zssh"
+
+proc add_server {servername_a hostname_a port_a username_a password_a idfile_a passphrase_a} {
+    global CONFIG_DIR
+    global RED_S
+    global COLOR_E
+    
+    set servers [get_server_config]
+
+    set outfile [open "$CONFIG_DIR/config.tcl" r]
+
+    # check if already exists
+    dict for {servername info} $servers {
+	dict with info {
+	    if {$servername == $servername_a} {
+		puts -nonewline "${RED_S}Warning, server ${servername_a} already exists, overwrite it?(Y/n):"
+		flush stdout
+		set overwrite [gets stdin]
+
+		if {$overwrite != "Y" && $overwrite != "y"} {
+		    return 0
+		}
+
+		break
+	    }
+	}
+    }
+
+    close $outfile
+    
+    set outfile [open "$CONFIG_DIR/config.tcl" w]
+    
+    dict for {servername info} $servers {
+	dict with info {
+	    if {$servername == $servername_a} {
+		continue
+	    }
+	    
+	    puts $outfile "set server_name $servername"
+	    puts $outfile "dict set servers \$server_name hostname    \"${hostname}\""
+	    puts $outfile "dict set servers \$server_name port        \"${port}\""
+	    puts $outfile "dict set servers \$server_name username    \"${username}\""
+	    puts $outfile "dict set servers \$server_name password    \"${password}\""
+	    puts $outfile "dict set servers \$server_name idfile      \"${idfile}\""
+	    puts $outfile "dict set servers \$server_name passphrase  \"${passphrase}\""
+	}
+    }
+
+    set  idfile_name ""
+    set  idfile_name [append $idfile_name [file tail $idfile_a] "." [clock seconds]]
+    set  idfile_path "ids/${idfile_name}"
+    
+    file copy -force $idfile_a $CONFIG_DIR/$idfile_path
+    
+    puts $outfile "set server_name $servername_a"
+    puts $outfile "dict set servers \$server_name hostname    \"${hostname_a}\""
+    puts $outfile "dict set servers \$server_name port        \"${port_a}\""
+    puts $outfile "dict set servers \$server_name username    \"${username_a}\""
+    puts $outfile "dict set servers \$server_name password    \"${password_a}\""
+    puts $outfile "dict set servers \$server_name idfile      \"${idfile_path}\""
+    puts $outfile "dict set servers \$server_name passphrase  \"${passphrase_a}\""
+
+    close $outfile
+    return 1    
+}
+
+proc del_server {server_index server_name} {
+    
+}
 
 proc generate_config {} {
     global SSH_IDS_DIR
@@ -66,6 +140,8 @@ proc list_s {} {
     set servers [get_server_config]
     
     set tab "    "
+
+    puts ""
     puts "${WHITE_S}Listing entries:${COLOR_E}\n"
 
     set i 0
@@ -79,26 +155,83 @@ proc list_s {} {
     puts ""
 }
 
-proc login_interact {hostname port username password idfile passphrase} {
-    if {$idfile eq ""} {
-	spawn zssh $username@$hostname -p $port
-	expect "*?assword:*"
-	send -- "${password}\r"
-	send -- "\r"
-	interact
+proc get_ssh_command {} {
+    global SSH_COMMAND
 
+    if {[auto_execok zssh] != ""} {
+	set SSH_COMMAND "zssh"
+	return 1
+    }
+
+    if {[auto_execok ssh] != ""} {
+	set SSH_COMMAND "ssh"
+	return 1
+    }
+
+    return 0
+}
+
+proc login_interact {hostname port username password idfile passphrase} {
+    global SSH_COMMAND
+    global RED_S
+    global COLOR_E
+
+    if {[get_ssh_command] == 0} {
+	puts "${RED_S}Error: Can't find ssh command, please install zssh or ssh tool...."
+	return 0
+    }
+
+    set timeout 5
+    
+    if {$idfile eq ""} {
+	spawn $SSH_COMMAND -oStrictHostKeyChecking=no -oCheckHostIP=no $username@$hostname -p $port
+	expect {
+	    "*?assword:*" { send "${password}\r\r";interact }
+	    timeout { puts "Timeout..."; return 0 }
+	    eof { return 0 }	   
+	}
+	
 	return 1
     }
 
     global SSH_IDS_DIR
 
-    ## has id file
+    # has id file
     set path "$SSH_IDS_DIR/${idfile}"
-    spawn zssh $username@$hostname -p $port -i $path
-    expect "*?\'$path\':*"
-    send -- "${passphrase}\r"
-    send -- "\r"
-    interact
+    spawn $SSH_COMMAND  -oStrictHostKeyChecking=no -oCheckHostIP=no $username@$hostname -p $port -i $path
+    expect {
+	"*?\'$path\':*" {send "${passphrase}\r\r";interact}
+	timeout { puts "Timeout..."; return 0 }
+	eof { return 0}	
+    }    
+    
+    return 1
+}
+
+proc select_and_login_interact {} {
+    global WHITE_S
+    global RED_S
+    global COLOR_E
+
+    while 1 {
+	# list servers
+	list_s
+	
+	puts -nonewline "${WHITE_S}\[Q/q for exit\] Select: ${COLOR_E}"
+	flush stdout
+
+	set index [gets stdin]
+
+	if { $index == "q" || $index == "Q"} {
+	    puts ""
+	    puts "${RED_S}Exited...${COLOR_E}"
+	    return 1
+	}
+
+	if {[scan $index {%[0-9]} m]} {
+	    select_and_login $index
+	}	
+    }
     
     return 1
 }
@@ -122,7 +255,7 @@ proc select_and_login {index} {
     }
 
     if {$has == 0} {
-	puts "${RED_S}Error: No this server index!${COLOR_E}"
+	return 0
     }
     
     return 1
@@ -132,6 +265,20 @@ proc install {} {
     global CONFIG_DIR
     global RED_S
     global COLOR_E
+
+    ## check dependencies
+    if {[auto_execok ssh] == ""} {
+	puts "${RED_S}Error: ssh command not installed, please install it first...${COLOR_E}"
+	return 1
+    } else {
+	puts "ssh command installed, ok..."
+    }
+
+    if {[auto_execok zssh] == ""} {
+	puts "${RED_S}Warning: zssh command not installed, will not support rz/sz...${COLOR_E}"
+    } else {
+	puts "zssh command installed, ok..."
+    }
 
     set curr_dir [pwd]
     
@@ -218,12 +365,20 @@ proc target {file_name} {
 
 proc show_usage {} {
     puts "Usages:"
-    puts "    --help     show help message"
-    puts "    l          list server entries, eg: sa l"
-    puts "    i          login to the index of server, eg: sa i 1"
-    puts "    target     export configs and target to a tgz file, eg: sa target /home/drons/sa.tgz"
-    puts "    install    do install\n"
-    puts "Note: Default config directory is $::env(HOME)/.sa, please configure it by yourself."
+    puts "    -h/--help         show help message"
+    
+    puts "    -l/--list         list server entries, eg: sa -l"
+
+    puts "    -s/--select       select and login to the index of server, eg: sa -s 1\n"
+
+    puts "    -a/--add          add a server to config, eg:"
+    puts "                      sa -a servername ip port username password \[idfile\] \[passphrase\]\n"
+
+    puts "    -t/--target       export configs and target to a tgz file, eg: sa -t /home/drons/sa.tgz\n"
+
+    puts "    -i/--install      do install\n"
+    
+    puts "Note: Default config directory is $::env(HOME)/.sa, you can configure it by yourself."
     puts "Dependency: zssh, expect\n"
 }
 
@@ -266,7 +421,7 @@ proc main {argc argv} {
     global COLOR_E
     
     if {$argc < 1} {
-	list_s
+	select_and_login_interact
 	return 1
     }
 
@@ -276,30 +431,71 @@ proc main {argc argv} {
     }
     
     switch [lindex $argv 0] {
-	
+	"-h" -
 	"--help" {
 	    show_usage
 	    return 1
 	}
 
-	"target" {
+	"-t" -
+	"--target" {
 	    if {$argc < 2} {
 		show_usage
 		return 1
 	    }
 	    return [target [lindex $argv 1]]
 	}
-	
-	"install" {
+
+	"-i" -
+	"--install" {
 	    return [install]
 	}
-	
-	"l" {
+
+	"-a" -
+	"--add" {
+	    if {$argc < 6} {
+		show_usage
+		return 0
+	    }
+	    
+	    set servername [lindex $argv 1]
+	    set hostname   [lindex $argv 2]
+	    set port       [lindex $argv 3]
+	    set username   [lindex $argv 4]
+	    set password   [lindex $argv 5]
+	    set idfile     [lindex $argv 6]
+	    set passphrase [lindex $argv 7]
+
+	    if {$idfile != "" && ![file exists $idfile]} {
+		puts "${RED_S}Error: id file not found.${COLOR_E}"
+		return 0
+	    }
+
+	    set ret [add_server $servername $hostname $port $username $password $idfile $passphrase]
+
+	    if {$ret == 1} {
+		puts "${RED_S}Server ${servername} is added.${COLOR_E}"
+	    } else {
+		puts "${RED_S}Cancled.${COLOR_E}"
+	    }	    
+	    
+	    return 1
+	}
+
+	"-d" -
+	"--delete" {
+	    
+	    return 1
+	}
+
+	"-l" -
+	"--list" {
 	    list_s
 	    return 1
 	}
 
-	"i" {
+	"-s" -
+	"--select" {
 	    if {$argc < 2} {
 		show_usage
 		return 1
