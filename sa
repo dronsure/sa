@@ -69,10 +69,10 @@ proc add_server {servername_a hostname_a port_a username_a password_a idfile_a p
     }
 
     set idfile_name ""
-    
+
     if {$idfile_a != ""} {
-	set  idfile_name  [append $idfile_name [file tail $idfile_a] "." [clock seconds]]
-	file copy -force $idfile_a "${CONFIG_DIR}/ids/${idfile_name}"
+	append idfile_name $servername_a "." [clock seconds] ".idfile"
+	file copy $idfile_a "${CONFIG_DIR}/ids/${idfile_name}"
     }
     
     puts $outfile "set server_name $servername_a"
