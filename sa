@@ -515,12 +515,15 @@ proc get_server_config {} {
     
     ## reading config file
     if {![file exists $CONFIG_DIR/config.tcl]} {
-	puts "${RED_S}Error: Can't find config file from ${CONFIG_DIR}, please use \[sa install\] command to install first.${COLOR_E}"
-	exit 1
+	return [dict create]
     }
 
     source $CONFIG_DIR/config.tcl
 
+    if { ![info exists servers] } {
+	return [dict create]
+    }
+    
     return $servers
 }
 
