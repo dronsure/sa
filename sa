@@ -68,14 +68,11 @@ proc add_server {servername_a hostname_a port_a username_a password_a idfile_a p
 	}
     }
 
-    set idfile_path ""
+    set idfile_name ""
     
     if {$idfile_a != ""} {
-	set  idfile_name ""
-	set  idfile_name [append $idfile_name [file tail $idfile_a] "." [clock seconds]]
-	set  idfile_path "ids/${idfile_name}"
-    
-	file copy -force $idfile_a $CONFIG_DIR/$idfile_path
+	set  idfile_name  [append $idfile_name [file tail $idfile_a] "." [clock seconds]]
+	file copy -force $idfile_a "${CONFIG_DIR}/ids/${idfile_name}"
     }
     
     puts $outfile "set server_name $servername_a"
@@ -83,7 +80,7 @@ proc add_server {servername_a hostname_a port_a username_a password_a idfile_a p
     puts $outfile "dict set servers \$server_name port        \"${port_a}\""
     puts $outfile "dict set servers \$server_name username    \"${username_a}\""
     puts $outfile "dict set servers \$server_name password    \"${password_a}\""
-    puts $outfile "dict set servers \$server_name idfile      \"${idfile_path}\""
+    puts $outfile "dict set servers \$server_name idfile      \"${idfile_name}\""
     puts $outfile "dict set servers \$server_name passphrase  \"${passphrase_a}\""
 
     close $outfile
@@ -290,7 +287,7 @@ proc select_and_login_interact {} {
 
 	set index [gets stdin]
 
-	if { $index == "q" || $index == "Q"} {
+	if { $index == "q" || $index == "Q" || $index == "exit"} {
 	    puts ""
 	    puts "${RED_S}Exited...${COLOR_E}"
 	    return 1
@@ -445,10 +442,25 @@ proc install {} {
 proc target {file_name} {
     global CONFIG_DIR
 
+    set servers [get_server_config]
+    
     set curr_dir [file dirname [file normalize [info script]]]
 
     puts "Packing..."
-    exec tar -czf $file_name -C $CONFIG_DIR config.tcl ids -C $curr_dir sa
+
+    set ids_list {}
+    
+    dict for {servername info} $servers {
+	dict with info {
+	    if {$idfile != ""} {
+		set id_name "ids/"
+		append id_name $idfile
+	        lappend ids_list $id_name
+	    }	    
+	}
+    }
+
+    exec tar -czf $file_name -C $CONFIG_DIR config.tcl {*}$ids_list -C $curr_dir sa
     puts "Done."
 
     return 1
