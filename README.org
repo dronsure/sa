@@ -2,9 +2,8 @@
 A ssh account manage tool.
 
 * Dependency
-[[http://zssh.sourceforge.net/][zssh]]
-
-[[https://core.tcl.tk/expect/index][expect]]
+1. [[http://zssh.sourceforge.net/][zssh]]
+2. [[https://core.tcl.tk/expect/index][expect]]
 
 * Install
 #+BEGIN_SRC sh
