@@ -22,21 +22,21 @@ sa -h
 
 #+BEGIN_SRC sh
   Usages:
-      -h/--help         show help message
-      -l/--list         list server entries, eg: sa -l
-      -s/--select       select and login to the index of server, eg: sa -s 1
+      -h, --help         show help message
+      -l, --list         list server entries, eg: sa -l
+      -s, --select       select and login to the index of server, eg: sa -s 1
 
-      -a/--add          add a server to config, eg:
+      -a, --add          add a server to config, eg:
                         sa -a servername ip port username password [idfile] [passphrase]
 
-      -d/--delete       delete a server to config, eg:
+      -d, --delete       delete a server to config, eg:
                         sa -d 1: delete the server which index is 1
                         sa -d example.tbj: delete the server which name is example.tbj
 
-      -t/--target       export configs and target to a tgz file, eg: sa -t /home/drons/sa.tgz
+      -t, --target       export configs and target to a tgz file, eg: sa -t /home/drons/sa.tgz
 
-      -i/--install      do install
-      -u/--update       do update
+      -i, --install      do install
+      -u, --update       do update
 
   Note: Default config directory is /home/dronsure/.sa, you can configure it by yourself.
   Dependency: zssh, expect

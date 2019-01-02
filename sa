@@ -468,23 +468,23 @@ proc target {file_name} {
 
 proc show_usage {} {
     puts "Usages:"
-    puts "    -h/--help         show help message"
+    puts "    -h, --help         show help message"
     
-    puts "    -l/--list         list server entries, eg: sa -l"
+    puts "    -l, --list         list server entries, eg: sa -l"
 
-    puts "    -s/--select       select and login to the index of server, eg: sa -s 1\n"
+    puts "    -s, --select       select and login to the index of server, eg: sa -s 1\n"
 
-    puts "    -a/--add          add a server to config, eg:"
+    puts "    -a, --add          add a server to config, eg:"
     puts "                      sa -a servername ip port username password \[idfile\] \[passphrase\]\n"
 
-    puts "    -d/--delete       delete a server to config, eg:"
+    puts "    -d, --delete       delete a server to config, eg:"
     puts "                      sa -d 1: delete the server which index is 1"
     puts "                      sa -d example.tbj: delete the server which name is example.tbj\n"
     
-    puts "    -t/--target       export configs and target to a tgz file, eg: sa -t /home/drons/sa.tgz\n"
+    puts "    -t, --target       export configs and target to a tgz file, eg: sa -t /home/drons/sa.tgz\n"
 
-    puts "    -i/--install      do install"
-    puts "    -u/--update       do update\n"
+    puts "    -i, --install      do install"
+    puts "    -u, --update       do update\n"
     
     puts "Note: Default config directory is $::env(HOME)/.sa, you can configure it by yourself."
     puts "Dependency: zssh, expect\n"
