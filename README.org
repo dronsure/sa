@@ -1,6 +1,10 @@
 * Introduction
 A ssh account manage tool.
 
+* Dependency
+[[http://zssh.sourceforge.net/][zssh]]
+[[https://core.tcl.tk/expect/index][expect]]
+
 * Install
 #+BEGIN_SRC sh
   git clone https://github.com/dronsure/sa.git
