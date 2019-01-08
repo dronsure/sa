@@ -264,6 +264,12 @@ proc login_interact {hostname port username password idfile passphrase} {
     # has id file
     set path "$SSH_IDS_DIR/${idfile}"
     spawn $SSH_COMMAND  -oStrictHostKeyChecking=no -oCheckHostIP=no $username@$hostname -p $port -i $path
+
+    if {$passphrase == ""} {
+	interact
+	return 1
+    }
+    
     expect {
 	"*?\'$path\':*" {send "${passphrase}\r\r";interact}
 	timeout { puts "Timeout..."; return 0 }
