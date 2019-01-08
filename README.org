@@ -45,3 +45,5 @@ sa -h
   Note: Default config directory is /home/dronsure/.sa, you can configure it by yourself.
   Dependency: zssh, expect
 #+END_SRC
+* Warning
+For use this tool, please don't use ~ssh-copy-id~ and ~ssh-add~.
