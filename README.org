@@ -17,6 +17,12 @@ Don't forget add ~/bin to your environment PATH:
   export PATH=$HOME/bin:$PATH
 #+END_SRC
 
+* Update
+#+BEGIN_SRC sh
+git clone https://github.com/dronsure/sa
+cd sa 
+./sa --update
+#+END_SRC
 * Usage
 Use -h to show usage:
 
