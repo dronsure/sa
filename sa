@@ -338,7 +338,7 @@ proc select_and_login_interact {} {
 	    continue
 	}
 
-	if {[regexp -nocase {^\![0-9]*} $index]} {
+	if {[regexp -nocase {^\#[0-9]*} $index]} {
 	    #set SSH_PROMPT { -t 'export PS1="\e[01;91m[\d \t \u@\h:\w ] >\e[0m "; bash --login --norc --noprofile'}
 	    set SSH_PROMPT {export PS1="\e[01;91m[\d \t \u@\h:\w ] >\e[0m "; bash --login --norc --noprofile}
 	    select_and_login [string range $index 1 [string length $index]] 
