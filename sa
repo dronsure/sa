@@ -343,6 +343,7 @@ proc select_and_login_interact {} {
 	if {[scan $index {%[0-9]} m]} {
 	    select_and_login $index
 	    set filter ""
+	    continue
 	}
 
 	set filter $index
