@@ -196,28 +196,6 @@ proc generate_config {} {
     return 1
 }
 
-proc list_s_get_align {num} {
-    set default_align_size 4
-
-    set tab ""
-
-    set i 0
-    while {[expr {$num % 9}] > 9} {
-	incr i
-	set num [expr {$num % 9}]
-    }
-
-    set i [expr {$default_align_size - $i}]
-    puts $num
-
-    while {$i > 0} {
-	append tab " "
-	incr i -1
-    }
-
-    return $tab
-}
-
 ## list all servers
 proc list_s {filter} {
     global RED_S
@@ -239,7 +217,7 @@ proc list_s {filter} {
     dict for {id info} $servers {
 	if {$filter == ""} {
 	    dict with info {
-		puts "${RED_S}${tab}${i}. ${id}${COLOR_E} -> ${username}@${hostname}:${port}"
+		puts [format "${RED_S}%6d. %s${COLOR_E} -> %s@%s:%d" $i $id $username $hostname $port]
 	    }
 	    incr i
 	    continue
@@ -247,7 +225,7 @@ proc list_s {filter} {
 
 	if {[regexp -nocase $filter $id]} {
 	    dict with info {
-		puts "${RED_S}${tab}${i}. ${id}${COLOR_E} -> ${username}@${hostname}:${port}"
+		puts [format "${RED_S}%6d. %s${COLOR_E} -> %s@%s:%d" $i $id $username $hostname $port]
 	    }
 	    incr i
 	    continue
@@ -340,8 +318,8 @@ proc select_and_login_interact {} {
 	    return 1
 	}
 
-	if {[scan $index {%[0-9]} m]} {
-	    select_and_login $index
+	if {[regexp -nocase {^@[0-9]*} $index]} {
+	    select_and_login [string range $index 1 [string length $index]]
 	    set filter ""
 	    continue
 	}
