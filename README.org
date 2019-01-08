@@ -51,6 +51,8 @@ sa -h
   Note: Default config directory is /home/dronsure/.sa, you can configure it by yourself.
   Dependency: zssh, expect
 #+END_SRC
+
+For interact mode(just execute ~sa~), if you want to select a ssh server to login, you need to add ~@~ in front of command.
 * Warning
 For use this tool, please don't use ~ssh-copy-id~ and ~ssh-add~.
 Or delete ssh private key, use ~ssh-add -D~.
