@@ -196,25 +196,64 @@ proc generate_config {} {
     return 1
 }
 
+proc list_s_get_align {num} {
+    set default_align_size 4
+
+    set tab ""
+
+    set i 0
+    while {[expr {$num % 9}] > 9} {
+	incr i
+	set num [expr {$num % 9}]
+    }
+
+    set i [expr {$default_align_size - $i}]
+    puts $num
+
+    while {$i > 0} {
+	append tab " "
+	incr i -1
+    }
+
+    return $tab
+}
+
 ## list all servers
-proc list_s {} {
+proc list_s {filter} {
     global RED_S
     global WHITE_S
     global COLOR_E
 
-    set servers [get_server_config]
+    if {$filter == "/" || $filter == ""} {
+	set filter ""
+    }
     
-    set tab "    "
+    set servers [get_server_config]
 
+    set tab "    "
+    
     puts ""
     puts "${WHITE_S}Listing entries:${COLOR_E}\n"
-
+    
     set i 0
     dict for {id info} $servers {
-	dict with info {
-	    puts "${RED_S}${tab}${i}. ${id}${COLOR_E} -> ${username}@${hostname}:${port}"
+	if {$filter == ""} {
+	    dict with info {
+		puts "${RED_S}${tab}${i}. ${id}${COLOR_E} -> ${username}@${hostname}:${port}"
+	    }
 	    incr i
+	    continue
 	}
+
+	if {[regexp -nocase $filter $id]} {
+	    dict with info {
+		puts "${RED_S}${tab}${i}. ${id}${COLOR_E} -> ${username}@${hostname}:${port}"
+	    }
+	    incr i
+	    continue
+	}
+
+	incr i
     }
 
     puts ""
@@ -284,16 +323,18 @@ proc select_and_login_interact {} {
     global RED_S
     global COLOR_E
 
+    set filter ""
+    
     while 1 {
 	# list servers
-	list_s
+	list_s $filter
 	
-	puts -nonewline "${WHITE_S}\[Q/q for exit\] Select: ${COLOR_E}"
+	puts -nonewline "${WHITE_S}\[@Q,@q,@exit for exit\] Select: ${COLOR_E}"
 	flush stdout
 
 	set index [gets stdin]
 
-	if { $index == "q" || $index == "Q" || $index == "exit"} {
+	if { $index == "@q" || $index == "@Q" || $index == "@exit"} {
 	    puts ""
 	    puts "${RED_S}Exited...${COLOR_E}"
 	    return 1
@@ -301,7 +342,9 @@ proc select_and_login_interact {} {
 
 	if {[scan $index {%[0-9]} m]} {
 	    select_and_login $index
-	}	
+	}
+
+	set filter $index
     }
     
     return 1
