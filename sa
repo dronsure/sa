@@ -631,7 +631,7 @@ proc main {argc argv} {
 
 	"-l" -
 	"--list" {
-	    return [list_s]	
+	    return [list_s ""]
 	}
 
 	"-s" -
