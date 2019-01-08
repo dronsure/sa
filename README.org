@@ -47,3 +47,4 @@ sa -h
 #+END_SRC
 * Warning
 For use this tool, please don't use ~ssh-copy-id~ and ~ssh-add~.
+Or delete ssh private key, use ~ssh-add -D~.
