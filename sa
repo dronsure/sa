@@ -270,12 +270,7 @@ proc login_interact {hostname port username password idfile passphrase} {
     set timeout 5
     
     if {$idfile eq ""} {
-	if {$SSH_PROMPT != ""} {
-	    spawn $SSH_COMMAND $username@$hostname -oStrictHostKeyChecking=no -oCheckHostIP=no  -p $port -t $SSH_PROMPT    
-	} else {
-	    spawn $SSH_COMMAND $username@$hostname -oStrictHostKeyChecking=no -oCheckHostIP=no  -p $port
-	}	
-	
+	spawn $SSH_COMMAND $username@$hostname -oStrictHostKeyChecking=no -oCheckHostIP=no  -p $port
 	expect {
 	    "*?assword:*" { send "${password}\r\r";interact }
 	    timeout { puts "Timeout..."; return 0 }
@@ -289,11 +284,7 @@ proc login_interact {hostname port username password idfile passphrase} {
 
     # has id file
     set path "$SSH_IDS_DIR/${idfile}"
-    if {$SSH_PROMPT != ""} {
-	spawn $SSH_COMMAND $username@$hostname -oStrictHostKeyChecking=no -oCheckHostIP=no  -p $port -i $path -t $SSH_PROMPT    
-    } else {
-	spawn $SSH_COMMAND $username@$hostname -oStrictHostKeyChecking=no -oCheckHostIP=no  -p $port -i $path
-    }    
+    spawn $SSH_COMMAND $username@$hostname -oStrictHostKeyChecking=no -oCheckHostIP=no  -p $port -i $path
 
     if {$passphrase == ""} {
 	interact
@@ -321,32 +312,23 @@ proc select_and_login_interact {} {
 	# list servers
 	list_s $filter
 	
-	puts -nonewline "${WHITE_S}\[@Q,@q,@exit for exit\] Select: ${COLOR_E}"
+	puts -nonewline "${WHITE_S}\[@Q,@q for exit\] Select: ${COLOR_E}"
 	flush stdout
 
 	set index [gets stdin]
 
-	if { $index == "@q" || $index == "@Q" || $index == "@exit"} {
+	if { $index == "@q" || $index == "@Q"} {
 	    puts ""
 	    puts "${RED_S}Exited...${COLOR_E}"
 	    return 1
 	}
 
-	if {[regexp -nocase {^@[0-9]*} $index]} {
+	if {[regexp -nocase {^\@[0-9]*} $index]} {
 	    select_and_login [string range $index 1 [string length $index]]
 	    set filter ""
 	    continue
 	}
 
-	if {[regexp -nocase {^\#[0-9]*} $index]} {
-	    #set SSH_PROMPT { -t 'export PS1="\e[01;91m[\d \t \u@\h:\w ] >\e[0m "; bash --login --norc --noprofile'}
-	    set SSH_PROMPT {export PS1="\e[01;91m[\d \t \u@\h:\w ] >\e[0m "; bash --login --norc --noprofile}
-	    select_and_login [string range $index 1 [string length $index]] 
-	    set filter ""
-	    continue
-	}
-
-	
 	set filter $index
     }
     
