@@ -312,24 +312,27 @@ proc select_and_login_interact {} {
 	# list servers
 	list_s $filter
 	
-	puts -nonewline "${WHITE_S}\[@Q,@q for exit\] Select: ${COLOR_E}"
+	puts -nonewline "${WHITE_S}\[Q,q,exit for exit\] Select: ${COLOR_E}"
 	flush stdout
 
 	set index [gets stdin]
 
-	if { $index == "@q" || $index == "@Q"} {
+	if { $index == "q" || $index == "Q" || $index == "exit"} {
 	    puts ""
 	    puts "${RED_S}Exited...${COLOR_E}"
 	    return 1
 	}
 
-	if {[regexp -nocase {^\@[0-9]*} $index]} {
-	    select_and_login [string range $index 1 [string length $index]]
-	    set filter ""
+	if {[string range $index 0 0] == "@"} {
+	    set filter [string range $index 1 [string length $index]]
 	    continue
 	}
+	
+	if {[scan $index {%[0-9]} m]} {
+	    select_and_login $index
+	}
 
-	set filter $index
+	set filter ""
     }
     
     return 1
