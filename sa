@@ -60,14 +60,15 @@ proc add_server {servername_a hostname_a port_a username_a password_a idfile_a p
 	    if {$servername == $servername_a} {
 		continue
 	    }
-	    
+
+	    puts $outfile "# $servername"
 	    puts $outfile "set server_name $servername"
 	    puts $outfile "dict set servers \$server_name hostname    \"${hostname}\""
 	    puts $outfile "dict set servers \$server_name port        \"${port}\""
 	    puts $outfile "dict set servers \$server_name username    \"${username}\""
 	    puts $outfile "dict set servers \$server_name password    \"${password}\""
 	    puts $outfile "dict set servers \$server_name idfile      \"${idfile}\""
-	    puts $outfile "dict set servers \$server_name passphrase  \"${passphrase}\""
+	    puts $outfile "dict set servers \$server_name passphrase  \"${passphrase}\"\n"
 	}
     }
 
@@ -77,14 +78,15 @@ proc add_server {servername_a hostname_a port_a username_a password_a idfile_a p
 	append idfile_name $servername_a "." [clock seconds] ".idfile"
 	file copy $idfile_a "${CONFIG_DIR}/ids/${idfile_name}"
     }
-    
+
+    puts $outfile "# $servername"
     puts $outfile "set server_name $servername_a"
     puts $outfile "dict set servers \$server_name hostname    \"${hostname_a}\""
     puts $outfile "dict set servers \$server_name port        \"${port_a}\""
     puts $outfile "dict set servers \$server_name username    \"${username_a}\""
     puts $outfile "dict set servers \$server_name password    \"${password_a}\""
     puts $outfile "dict set servers \$server_name idfile      \"${idfile_name}\""
-    puts $outfile "dict set servers \$server_name passphrase  \"${passphrase_a}\""
+    puts $outfile "dict set servers \$server_name passphrase  \"${passphrase_a}\"\n"
 
     close $outfile
     puts "${RED_S}Server ${servername_a} is added.${COLOR_E}"
@@ -140,14 +142,15 @@ proc del_server {server} {
 	    if {$servername == $really_del_server_name} {
 		continue
 	    }
-	    
+
+	    puts $outfile "# $servername"
 	    puts $outfile "set server_name $servername"
 	    puts $outfile "dict set servers \$server_name hostname    \"${hostname}\""
 	    puts $outfile "dict set servers \$server_name port        \"${port}\""
 	    puts $outfile "dict set servers \$server_name username    \"${username}\""
 	    puts $outfile "dict set servers \$server_name password    \"${password}\""
 	    puts $outfile "dict set servers \$server_name idfile      \"${idfile}\""
-	    puts $outfile "dict set servers \$server_name passphrase  \"${passphrase}\""
+	    puts $outfile "dict set servers \$server_name passphrase  \"${passphrase}\"\n"
 	}
     }
 
