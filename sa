@@ -371,19 +371,19 @@ proc update {} {
     global RED_S
     global COLOR_E
 
-    if {![file exists $::env(HOME)/bin/sa]} {
-	puts "${RED_S}Error: ${::env(HOME)}/bin/sa not exists, please install first."
+    if {![file exists $::env(HOME)/.bin/sa]} {
+	puts "${RED_S}Error: ${::env(HOME)}/.bin/sa not exists, please install first."
 	return 0
     }
 
     # delete first
-    file delete -force $::env(HOME)/bin/sa
+    file delete -force $::env(HOME)/.bin/sa
 
     set curr_dir [pwd]
     
     # paste it 
-    puts "Info: copying main execute file to ${::env(HOME)}/bin..."
-    file copy -force $curr_dir/sa ${::env(HOME)}/bin/sa
+    puts "Info: copying main execute file to ${::env(HOME)}/.bin..."
+    file copy -force $curr_dir/sa ${::env(HOME)}/.bin/sa
     puts "Done.\n"
 
     return 1
@@ -458,23 +458,23 @@ proc install {} {
 	puts "Done."
     }
 
-    if {![file exists $::env(HOME)/bin]} {
-	puts "Info: creating $::env(HOME)/bin directory..."
-	file mkdir $::env(HOME)/bin
+    if {![file exists $::env(HOME)/.bin]} {
+	puts "Info: creating $::env(HOME)/.bin directory..."
+	file mkdir $::env(HOME)/.bin
 	puts "Done."
     }
     
-    if {[file exists $::env(HOME)/bin/sa]} {
-	puts "${RED_S}Error: ${::env(HOME)}/bin/sa already exists, you should delete it by yourself, stoped."
+    if {[file exists $::env(HOME)/.bin/sa]} {
+	puts "${RED_S}Error: ${::env(HOME)}/.bin/sa already exists, you should delete it by yourself, stoped."
 	return 0
     }
 
-    puts "Info: copying main execute file to ${::env(HOME)}/bin..."
-    file copy -force $curr_dir/sa ${::env(HOME)}/bin/sa
+    puts "Info: copying main execute file to ${::env(HOME)}/.bin..."
+    file copy -force $curr_dir/sa ${::env(HOME)}/.bin/sa
     puts "Done.\n"
 
     puts "Install Successful."
-    puts "Note. Don't forget to seting your environment: export PATH=${::env(HOME)}/bin:\$PATH"
+    puts "Note. Don't forget to seting your environment: export PATH=${::env(HOME)}/.bin:\$PATH"
 
     return 1
 }
