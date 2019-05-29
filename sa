@@ -63,12 +63,12 @@ proc add_server {servername_a hostname_a port_a username_a password_a idfile_a p
 
 	    puts $outfile "# $servername"
 	    puts $outfile "set server_name $servername"
-	    puts $outfile "dict set servers \$server_name hostname    \"${hostname}\""
-	    puts $outfile "dict set servers \$server_name port        \"${port}\""
-	    puts $outfile "dict set servers \$server_name username    \"${username}\""
-	    puts $outfile "dict set servers \$server_name password    \"${password}\""
-	    puts $outfile "dict set servers \$server_name idfile      \"${idfile}\""
-	    puts $outfile "dict set servers \$server_name passphrase  \"${passphrase}\"\n"
+	    puts $outfile "dict set servers \$server_name hostname    \{${hostname}\}"
+	    puts $outfile "dict set servers \$server_name port        \{${port}\}"
+	    puts $outfile "dict set servers \$server_name username    \{${username}\}"
+	    puts $outfile "dict set servers \$server_name password    \{${password}\}"
+	    puts $outfile "dict set servers \$server_name idfile      \{${idfile}\}"
+	    puts $outfile "dict set servers \$server_name passphrase  \{${passphrase}\}\n"
 	}
     }
 
@@ -81,12 +81,12 @@ proc add_server {servername_a hostname_a port_a username_a password_a idfile_a p
 
     puts $outfile "# $servername"
     puts $outfile "set server_name $servername_a"
-    puts $outfile "dict set servers \$server_name hostname    \"${hostname_a}\""
-    puts $outfile "dict set servers \$server_name port        \"${port_a}\""
-    puts $outfile "dict set servers \$server_name username    \"${username_a}\""
-    puts $outfile "dict set servers \$server_name password    \"${password_a}\""
-    puts $outfile "dict set servers \$server_name idfile      \"${idfile_name}\""
-    puts $outfile "dict set servers \$server_name passphrase  \"${passphrase_a}\"\n"
+    puts $outfile "dict set servers \$server_name hostname    \{${hostname_a}\}"
+    puts $outfile "dict set servers \$server_name port        \{${port_a}\}"
+    puts $outfile "dict set servers \$server_name username    \{${username_a}\}"
+    puts $outfile "dict set servers \$server_name password    \{${password_a}\}"
+    puts $outfile "dict set servers \$server_name idfile      \{${idfile_name}\}"
+    puts $outfile "dict set servers \$server_name passphrase  \{${passphrase_a}\}\n"
 
     close $outfile
     puts "${RED_S}Server ${servername_a} is added.${COLOR_E}"
@@ -145,12 +145,12 @@ proc del_server {server} {
 
 	    puts $outfile "# $servername"
 	    puts $outfile "set server_name $servername"
-	    puts $outfile "dict set servers \$server_name hostname    \"${hostname}\""
-	    puts $outfile "dict set servers \$server_name port        \"${port}\""
-	    puts $outfile "dict set servers \$server_name username    \"${username}\""
-	    puts $outfile "dict set servers \$server_name password    \"${password}\""
-	    puts $outfile "dict set servers \$server_name idfile      \"${idfile}\""
-	    puts $outfile "dict set servers \$server_name passphrase  \"${passphrase}\"\n"
+	    puts $outfile "dict set servers \$server_name hostname    \{${hostname}\}"
+	    puts $outfile "dict set servers \$server_name port        \{${port}\}"
+	    puts $outfile "dict set servers \$server_name username    \{${username}\}"
+	    puts $outfile "dict set servers \$server_name password    \{${password}\}"
+	    puts $outfile "dict set servers \$server_name idfile      \{${idfile}\}"
+	    puts $outfile "dict set servers \$server_name passphrase  \{${passphrase}\}\n"
 	}
     }
 
@@ -172,30 +172,30 @@ proc generate_config {} {
     set outfile [open "$CONFIG_DIR/config.tcl" w+]
 
     puts $outfile "## server configs"
-    puts $outfile "## hostname    \"127.0.0.1\""
-    puts $outfile "## port        \"22\""
-    puts $outfile "## username    \"root\""
-    puts $outfile "## password    \"toor\""
-    puts $outfile "## idfile      \"ids/1234.pem\""
-    puts $outfile "## passphrase  \"\"\n"
+    puts $outfile "## hostname    \{127.0.0.1\}"
+    puts $outfile "## port        \{22\}"
+    puts $outfile "## username    \{root\}"
+    puts $outfile "## password    \{toor\}"
+    puts $outfile "## idfile      \{ids/1234.pem\}"
+    puts $outfile "## passphrase  \{\}\n"
 
     puts $outfile "# example.me"
     puts $outfile "set server_name example.me"
-    puts $outfile "dict set servers \$server_name hostname    \"127.0.0.1\""
-    puts $outfile "dict set servers \$server_name port        \"22\""
-    puts $outfile "dict set servers \$server_name username    \"root\""
-    puts $outfile "dict set servers \$server_name password    \"toor\""
-    puts $outfile "dict set servers \$server_name idfile      \"\""
-    puts $outfile "dict set servers \$server_name passphrase  \"\"\n\n"
+    puts $outfile "dict set servers \$server_name hostname    \{127.0.0.1\}"
+    puts $outfile "dict set servers \$server_name port        \{22\}"
+    puts $outfile "dict set servers \$server_name username    \{root\}"
+    puts $outfile "dict set servers \$server_name password    \{toor\}"
+    puts $outfile "dict set servers \$server_name idfile      \{\}"
+    puts $outfile "dict set servers \$server_name passphrase  \{\}\n\n"
 
     puts $outfile "# example.tbj"
     puts $outfile "set server_name example.tbj"
-    puts $outfile "dict set servers \$server_name hostname    \"127.0.0.1\""
-    puts $outfile "dict set servers \$server_name port        \"22\""
-    puts $outfile "dict set servers \$server_name username    \"root\""
-    puts $outfile "dict set servers \$server_name password    \"\""
-    puts $outfile "dict set servers \$server_name idfile      \"ids/example.pem\""
-    puts $outfile "dict set servers \$server_name passphrase  \"toor\""
+    puts $outfile "dict set servers \$server_name hostname    \{127.0.0.1\}"
+    puts $outfile "dict set servers \$server_name port        \{22\}"
+    puts $outfile "dict set servers \$server_name username    \{root\}"
+    puts $outfile "dict set servers \$server_name password    \{\}"
+    puts $outfile "dict set servers \$server_name idfile      \{ids/example.pem\}"
+    puts $outfile "dict set servers \$server_name passphrase  \{toor\}"
 
     close $outfile
     
