@@ -1,6 +1,10 @@
 * Introduction
 A ssh account manage tool.
 
+* Preview
+
+[[./resources/images/view.png]]
+
 * Dependency
 1. [[http://zssh.sourceforge.net/][zssh]]
 2. [[https://core.tcl.tk/expect/index][expect]]
