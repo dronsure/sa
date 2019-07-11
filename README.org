@@ -11,7 +11,7 @@ A ssh account manage tool.
 
 * Install
 #+BEGIN_SRC sh
-  git clone https://github.com/dronsure/sa.git
+  git clone https://github.com/dronsure/sa.git # https://gitee.com/dronsure/sa.git
   cd sa
   ./sa --install
 #+END_SRC
@@ -23,7 +23,7 @@ Don't forget add ~/bin to your environment PATH:
 
 * Update
 #+BEGIN_SRC sh
-git clone https://github.com/dronsure/sa
+git clone https://github.com/dronsure/sa # https://gitee.com/dronsure/sa.git
 cd sa 
 ./sa --update
 #+END_SRC
